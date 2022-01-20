@@ -1,4 +1,3 @@
-token = "OTIxMTQ4MzU0OTI1MzI2Mzk2.YbusQQ.hS-q8hKWQiQU8M39D3Qirxo967g"
 
 from datetime import datetime
 import discord
@@ -7,6 +6,13 @@ import json
 from discord import player
 from discord import message
 from discord import file
+from jinja2 import environment
+
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from main import makeGraph, makePowerGraph, makeResourceGraph
 
@@ -162,11 +168,14 @@ class MyClient(discord.Client):
 
 
 
-
 def main():
     try:
         client = MyClient()
-        client.run(token)
+        token = os.environ.get("TOKEN")
+        if token is not None:
+            client.run(token)
+        else:
+            print("No token")
     finally:
         print("Shutdown")
 
