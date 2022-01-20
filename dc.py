@@ -34,7 +34,7 @@ fields = {
 
 idToPlayer = {
     365469050794672128: "Lancer",
-    237495183934095361: "Pilbågsskytten",
+    237495183934095361: "Pilbagsskytten",
     377018183623901184: "StolBord"
 }
 
