@@ -1,4 +1,3 @@
-
 from datetime import datetime
 import discord
 import json
@@ -33,7 +32,6 @@ fields = {
     "top200": ['top20', 't200'],
 }
 
-
 idToPlayer = {
     365469050794672128: "Lancer",
     237495183934095361: "Pilbågsskytten",
@@ -45,10 +43,10 @@ with open('data.json') as json_file:
 
 with open('message_id.json') as json_file:
     graph_message_id_json = json.load(json_file)
- 
+
 
 def parseMessage(message):
-    
+
     try:
         field = None
         fieldKeyword = None
@@ -72,8 +70,9 @@ def parseMessage(message):
         if field is not None:
             contentValue = message.content[:]
             if "<" in contentValue:
-                contentValue = contentValue[0: contentValue.find("<")] + contentValue[contentValue.find(">"): -1 ]
-            
+                contentValue = contentValue[0:contentValue.find(
+                    "<")] + contentValue[contentValue.find(">"):-1]
+
             contentValue = contentValue.replace(fieldKeyword, "")
             contentValue = contentValue.replace(" ", "")
             value = None
@@ -84,7 +83,7 @@ def parseMessage(message):
             if "m" in contentValue:
                 sufixFactor = 1000000
                 contentValue = contentValue.replace("m", "")
-                
+
             value = int(float(contentValue) * sufixFactor)
             return (field, value, playerId, playerName, date)
         else:
@@ -95,33 +94,45 @@ def parseMessage(message):
 
 def addFieldValue(field, value, date, playerId):
     if field in data_json:
-        data_json[field].append({"id": playerId, "field": field, "value": value, "date": str(date) })
+        data_json[field].append({
+            "id": playerId,
+            "field": field,
+            "value": value,
+            "date": str(date)
+        })
     else:
-        data_json[field] = [{"id": playerId, "field": field, "value": value, "date": str(date) }]
-    
+        data_json[field] = [{
+            "id": playerId,
+            "field": field,
+            "value": value,
+            "date": str(date)
+        }]
+
     with open('data.json', 'w') as outfile:
         json.dump(data_json, outfile)
 
 
-
 class MyClient(discord.Client):
+
     async def on_ready(self):
         print('Logged on as', self.user)
         self.graph_channel = self.get_channel(channel_graph)
         self.storage_channel = self.get_channel(channel_storage)
 
-    
     async def updateGraph(self, filename, title, field):
         global power_message_id
-        res = await self.storage_channel.send(file=discord.File('graphs/' + filename))
+        res = await self.storage_channel.send(file=discord.File('graphs/' +
+                                                                filename))
         if res is not None and len(res.attachments) == 1:
             url = res.attachments[0].url
             print(url)
             embed = discord.Embed(title=title)
             embed.set_image(url=url)
-            embed.set_footer(text="Updaterad: " + datetime.now().strftime("%b %d %H:%M"))
+            embed.set_footer(text="Updaterad: " +
+                             datetime.now().strftime("%b %d %H:%M"))
             if field in graph_message_id_json:
-                message = await self.graph_channel.fetch_message(graph_message_id_json[field])
+                message = await self.graph_channel.fetch_message(
+                    graph_message_id_json[field])
                 await message.edit(embed=embed)
             else:
                 message_res = await self.graph_channel.send(embed=embed)
@@ -136,18 +147,15 @@ class MyClient(discord.Client):
         elif field == "resource_gathered":
             file = makeResourceGraph(data_json)
             await self.updateGraph(file, "Resurs graf", field)
-            
 
     async def on_message(self, message):
-        
+
         # don't respond to ourselves
         if message.author == self.user:
             return
 
-        
         if message.channel.id == channel_graph:
             print("{id} msg: {m}".format(id=message.id, m=message.content))
-            
 
         if message.channel.id == channel_power:
             if "update" in message.content:
@@ -162,10 +170,13 @@ class MyClient(discord.Client):
             if parsed:
                 (field, value, playerId, playerName, date) = parsed
 
-                addFieldValue(field,value,date,playerId)
-                await message.channel.send('set {f} for player {p} to {v} at{d}'.format(f=field, p=playerName, v=value, d=date))
+                addFieldValue(field, value, date, playerId)
+                await message.channel.send(
+                    'set {f} for player {p} to {v} at{d}'.format(f=field,
+                                                                 p=playerName,
+                                                                 v=value,
+                                                                 d=date))
                 await self.handleGraphUpdate(field)
-
 
 
 def main():
@@ -179,16 +190,17 @@ def main():
     finally:
         print("Shutdown")
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     main()
 
 #p 136k
 #pb 10600
 #pr 9639
-#pt 34043 
+#pt 34043
 #pc 108600
 
-#rg  
+#rg
 #p50
 #p100
 #p150
